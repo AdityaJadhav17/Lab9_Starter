@@ -7,6 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab 9</title>
 
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({
+      token: "43dbb7fdef194a3396f21f2304748652"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+
   <style>
     button {
       margin: 3px;
@@ -69,39 +77,199 @@
     </form>
 
     <section id="error-btns">
-      <button>Console Log</button>
-      <button>Console Error</button>
-      <button>Console Count</button>
-      <button>Console Warn</button>
-      <button>Console Assert</button>
-      <button>Console Clear</button>
-      <button>Console Dir</button>
-      <button>Console dirxml</button>
-      <button>Console Group Start</button>
-      <button>Console Group End</button>
-      <button>Console Table</button>
-      <button>Start Timer</button>
-      <button>End Timer</button>
-      <button>Console Trace</button>
-      <button>Trigger a Global Error</button>
+      <button type="button" id="log-btn">Console Log</button>
+      <button type="button" id="error-btn">Console Error</button>
+      <button type="button" id="count-btn">Console Count</button>
+      <button type="button" id="warn-btn">Console Warn</button>
+      <button type="button" id="assert-btn">Console Assert</button>
+      <button type="button" id="clear-btn">Console Clear</button>
+      <button type="button" id="dir-btn">Console Dir</button>
+      <button type="button" id="dirxml-btn">Console dirxml</button>
+      <button type="button" id="group-start-btn">Console Group Start</button>
+      <button type="button" id="group-end-btn">Console Group End</button>
+      <button type="button" id="table-btn">Console Table</button>
+      <button type="button" id="time-start-btn">Start Timer</button>
+      <button type="button" id="time-end-btn">End Timer</button>
+      <button type="button" id="trace-btn">Console Trace</button>
+      <button type="button" id="try-catch-btn">Try/Catch/Finally</button>
+      <button type="button" id="throw-btn">Throw Error</button>
+      <button type="button" id="custom-error-btn">Custom Error</button>
+      <button type="button" id="global-error-btn">Trigger a Global Error</button>
     </section>
   </main>
 
   <script>
-    let form = document.querySelector('form');
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      let output = document.querySelector('output');
-      let firstNum = document.querySelector('#first-num').value;
-      let secondNum = document.querySelector('#second-num').value;
-      let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+    class InvalidCalculationError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'InvalidCalculationError';
+      }
+    }
+
+    const form = document.querySelector('form');
+    const output = document.querySelector('output');
+    const firstInput = document.querySelector('#first-num');
+    const secondInput = document.querySelector('#second-num');
+    const operatorInput = document.querySelector('#operator');
+
+    window.addEventListener('error', event => {
+      console.error('Global error handler caught:', event.message);
+      output.textContent = 'Global error caught. Check the console.';
     });
 
-    let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
+    function calculate(firstNum, operator, secondNum) {
+      if (Number.isNaN(firstNum) || Number.isNaN(secondNum)) {
+        throw new InvalidCalculationError('Both calculator inputs must be numbers.');
+      }
 
-    // Start your code here
-    // You may move this JS to another file if you wish
+      if (operator === '/' && secondNum === 0) {
+        throw new InvalidCalculationError('Cannot divide by zero.');
+      }
+
+      switch (operator) {
+        case '+':
+          return firstNum + secondNum;
+        case '-':
+          return firstNum - secondNum;
+        case '*':
+          return firstNum * secondNum;
+        case '/':
+          return firstNum / secondNum;
+        default:
+          throw new InvalidCalculationError(`Unknown operator: ${operator}`);
+      }
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      try {
+        const firstNum = Number(firstInput.value);
+        const secondNum = Number(secondInput.value);
+        const operator = operatorInput.value;
+        output.textContent = calculate(firstNum, operator, secondNum);
+      } catch (error) {
+        console.error('Calculator failed:', error);
+        output.textContent = error.message;
+      } finally {
+        console.log('Calculator submit finished.');
+      }
+    });
+
+    document.querySelector('#log-btn').addEventListener('click', () => {
+      console.log('Console log demo: the app is running.');
+    });
+
+    document.querySelector('#error-btn').addEventListener('click', () => {
+      console.error('Console error demo: sample error message.');
+    });
+
+    document.querySelector('#count-btn').addEventListener('click', () => {
+      console.count('Count Button');
+    });
+
+    document.querySelector('#warn-btn').addEventListener('click', () => {
+      console.warn('Console warn demo: check this warning.');
+    });
+
+    document.querySelector('#assert-btn').addEventListener('click', () => {
+      console.assert(2 + 2 === 5, { number: 2, errorMsg: 'The number does not equal 5.' });
+    });
+
+    document.querySelector('#clear-btn').addEventListener('click', () => {
+      console.clear();
+    });
+
+    document.querySelector('#table-btn').addEventListener('click', () => {
+      console.table([
+        { item: 'Notebook', price: 4.99, inStock: true },
+        { item: 'Pen', price: 1.49, inStock: true },
+        { item: 'Backpack', price: 29.99, inStock: false }
+      ]);
+    });
+
+    document.querySelector('#dir-btn').addEventListener('click', () => {
+      console.dir(document.querySelector('fieldset'));
+    });
+
+    document.querySelector('#dirxml-btn').addEventListener('click', () => {
+      console.dirxml(document.querySelector('fieldset'));
+    });
+
+    document.querySelector('#group-start-btn').addEventListener('click', () => {
+      console.group('Grouped checkout log');
+      console.log('Step 1: validate cart');
+      console.log('Step 2: calculate total');
+      console.groupCollapsed('Payment details');
+      console.log('Payment approved for demo order #110.');
+    });
+
+    document.querySelector('#group-end-btn').addEventListener('click', () => {
+      console.groupEnd();
+      console.groupEnd();
+    });
+
+    document.querySelector('#time-start-btn').addEventListener('click', () => {
+      console.time('demoTimer');
+      console.log('Timer started.');
+    });
+
+    document.querySelector('#time-end-btn').addEventListener('click', () => {
+      console.timeEnd('demoTimer');
+    });
+
+    document.querySelector('#trace-btn').addEventListener('click', () => {
+      function submitOrder() {
+        console.trace('Trace demo: submitOrder was called.');
+      }
+      submitOrder();
+    });
+
+    document.querySelector('#try-catch-btn').addEventListener('click', () => {
+      const savedProfile = '{"name":"Ada Lovelace"}';
+
+      try {
+        const profile = JSON.parse(savedProfile);
+        if (!profile.email) {
+          throw new Error('Profile is missing an email address.');
+        }
+        console.log(`Loaded profile for ${profile.email}`);
+      } catch (error) {
+        console.error('Could not load saved profile:', error.message);
+      } finally {
+        console.log('Finished profile loading attempt.');
+      }
+    });
+
+    document.querySelector('#throw-btn').addEventListener('click', () => {
+      const cart = { item: 'Lab sticker', quantity: 0 };
+
+      try {
+        if (cart.quantity < 1) {
+          throw new Error('Cart quantity must be at least 1 before checkout.');
+        }
+        console.log('Checkout can continue.');
+      } catch (error) {
+        console.error('Checkout stopped:', error.message);
+      }
+    });
+
+    document.querySelector('#custom-error-btn').addEventListener('click', () => {
+      try {
+        calculate(10, '/', 0);
+      } catch (error) {
+        if (error instanceof InvalidCalculationError) {
+          console.error(`${error.name} caught: ${error.message}`);
+        } else {
+          console.error(error);
+        }
+      }
+    });
+
+    document.querySelector('#global-error-btn').addEventListener('click', () => {
+      setTimeout(() => {
+        throw new Error('Intentional global error from Lab 9 button.');
+      }, 0);
+    });
   </script>
 </body>
 
